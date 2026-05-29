@@ -1,0 +1,15 @@
+# Data — lives in GCS, never in Git
+data/*.csv
+data/*.parquet
+*.crc
+
+# Credentials
+*.json
+service-account*.json
+
+# Python / notebooks
+__pycache__/
+.ipynb_checkpoints/
+venv/
+.venv/
+*.pyc
