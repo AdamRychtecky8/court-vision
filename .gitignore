@@ -1,4 +1,4 @@
-# Data — lives in GCS, never in Git
+# Data ï¿½ lives in GCS, never in Git
 data/*.csv
 data/*.parquet
 *.crc
