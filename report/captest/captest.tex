@@ -1,0 +1,71 @@
+\documentclass{article}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{etoolbox}
+
+% Defer \caption inside longtable so it prints at the end instead of where it's called.
+\makeatletter
+\let\LT@OldCaption\caption
+\AtBeginEnvironment{longtable}{%
+  \let\LT@DeferredCaption\@empty
+  \renewcommand{\caption}{%
+    \protected@edef\LT@DeferredCaption{\noexpand\LT@OldCaption}%
+    \@bsphack
+    \@dblarg{\LT@stash@caption}%
+  }%
+}
+\newcommand{\LT@stash@caption}[2][]{%
+  \gdef\LT@stash@opt{#1}%
+  \gdef\LT@stash@txt{#2}%
+  \@esphack
+}
+\AtEndEnvironment{longtable}{%
+  \ifx\LT@stash@txt\@empty\else
+    \ifx\LT@stash@opt\@empty
+      \LT@OldCaption{\LT@stash@txt}%
+    \else
+      \LT@OldCaption[\LT@stash@opt]{\LT@stash@txt}%
+    \fi
+    \global\let\LT@stash@txt\@empty
+  \fi
+}
+\makeatother
+
+\begin{document}
+
+\section{Test}
+
+See Table~\ref{tbl-test} and Table~\ref{tbl-test2}.
+
+\begin{longtable}[]{@{}lr@{}}
+
+\caption{\label{tbl-test}This caption should appear BELOW the table data, not above it.}
+
+\toprule
+Zone & Value \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Restricted Area & 1.232 \\
+Mid-Range & 0.798 \\
+
+\end{longtable}
+
+\begin{longtable}[]{@{}lr@{}}
+
+\caption{\label{tbl-test2}Second table caption, also should be below.}
+
+\toprule
+Model & AUC \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+LogReg & 0.629 \\
+LinearSVC & 0.621 \\
+
+\end{longtable}
+
+\end{document}

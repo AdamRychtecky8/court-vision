@@ -1,36 +1,40 @@
 ---
 title: "The Three-Point Revolution: A Quantitative Analysis of the NBA's Strategic Transformation"
-author:
-  - name: Adam Rychtecky
-    email: adam.rychtecky@outlook.com
-    affiliation: "PSTAT 135 — Big Data Analytics, University of California, Santa Barbara"
-date: "June 3, 2026"
-abstract: |
-  **DRAFT ABSTRACT — replace entirely with your own words before submission.**
 
-  This project quantifies the NBA's three-point revolution across 4,222,442 shot attempts
-  spanning 21 seasons (2004–2024), processed on Google Cloud using Apache Spark and
-  MLlib. Three connected analyses address why the shift was mathematically inevitable,
-  when it accelerated, and how it reorganized the player landscape. Zone efficiency
-  analysis reveals that mid-range shots generate only 0.798 points per attempt versus
-  1.054 for above-the-break threes — a 32% efficiency gap on attempts with nearly
-  identical field-goal percentages (39.9% vs. 35.1%). A LASSO-regularized shot-make
-  classifier (ROC-AUC = 0.629) confirms that shot location and action type dominate
-  game-context features in predicting whether a shot falls. League-wide three-point
-  attempt rate rose from 18.6% in 2004 to 39.4% in 2024, with the sharpest two-year
-  acceleration between 2015 and 2017. Unsupervised clustering of player shot profiles
-  identifies five archetypes: the mid-range specialist archetype declined from 37.3% to
-  7.7% of qualifying player-seasons after 2015, while a modern balanced-scoring archetype
-  expanded from 8.1% to 35.8%.
+author:
+  - name: "Adam Rychtecky"
+    affiliation: ""
+    email: "adamrychtecky@ucsb.edu"
+
+date: "June 11, 2026"
+
+abstract-title: "Abstract"
+
+abstract: |
+  This study quantitatively examines the NBA’s transition toward three-point shooting using over 4.2 million shot attempts
+  spanning 21 seasons from 2004 to 2024. Using distributed processing and statistical modeling techniques, the analysis
+  addresses three core questions: whether the shift was mathematically justified, when it accelerated, and how it reshaped
+  player roles. Zone efficiency results show a clear structural disadvantage for mid-range shots, which yield substantially
+  fewer points per attempt than three-point shots due to similar field-goal percentages. A LASSO-regularized classification
+  model further demonstrates that shot location and type are the strongest predictors of shot success, outweighing contextual
+  game factors. Time-series analysis reveals a steady rise in three-point attempts, with a pronounced inflection point in the
+  mid-2010s. Finally, clustering of player shot profiles identifies five distinct archetypes and highlights a major shift
+  in player composition, with mid-range specialists sharply declining and versatile, perimeter-oriented scorers becoming
+  dominant. Overall, the findings indicate that the three-point revolution was a mathematically driven and inevitable transformation
+  that fundamentally redefined offensive strategy and player value in the modern NBA.
+
 format:
   pdf:
+    documentclass: article
+    classoption: [11pt]
     geometry: margin=1in
     fontsize: 11pt
     number-sections: true
     fig-pos: "H"
-    toc: true
-    toc-depth: 2
+    fig-cap-location: bottom
     keep-tex: false
+    linestretch: 1.15
+
 execute:
   echo: false
   warning: false
@@ -45,44 +49,53 @@ import warnings
 warnings.filterwarnings("ignore")
 ```
 
+\newpage
+
 # Introduction
 
-<!-- WRITE: Open with the central puzzle — for most of NBA history the mid-range jump shot
-was a core weapon, yet by the 2010s the league largely abandoned it. State the core question:
-how did the three-point revolution reshape the NBA — why it made sense mathematically, when
-it happened, and what it did to the kinds of players who succeed. The introduction should move
-from the broad cultural moment (analytics revolution, pace-and-space) to the three specific
-analytical questions this paper answers. End with a one-paragraph roadmap of the paper's
-sections. Do NOT copy or paraphrase the abstract. -->
+The NBA is one of the foremost sports leagues in the USA generating billions in revenue and having been running for nearly a century. 
+Any person who wants to call themselves a fan of basketball knows about the transition from shooting 2pt shots to 3pt shots during the 2010s era of basketball.
+The so called analytics movement stated the 2pt mid range shot was "inefficient" compared to its 3pt counterpart
+sparking a new offesnive era. Was the vanishing of this shot type and even player type justified? Or were the analytics missing a nuance on a professional player could know?
 
-<!-- WRITE: Close the introduction with an explicit statement of the paper's three-part
-analytical argument (the "through-line"): the mid-range penalty was always there in the math;
-the Warriors proved you could build a title team around exploiting it; the league copied them,
-and the player archetypes that define success changed as a result. Make clear which section of
-the paper addresses each link in this chain. -->
+This basketball era transition always interested me as it seemed almost late. How did players, coaches, and teams not realize this inefficency all the way
+until the 2010s? Decades of basketball where the most inefficient shot type was the most popular did not add up. This led me to pursue the following
+questions: was the shift toward the three mathematically justified; when exactly did the league tip to accepting this; and what happened to the types of 
+players who had to endure this transition.
+
+I pulled from the official NBA dataset of 4.22 million shot records over 21 seasons (2004-2024), every shot tagged with location and zone. The scale and cleanliness
+of the dataset lets me measure efficiency by zone over the entire revolution. There has been research prior to mine showing the efficiency argument by the Warriors team
+who spearheaded the transition. I simply mean to quantify it at a large modern scale through various methods of analysis being a shot-make classifier
+season-level time series, and a clustering of player profiles. 
+
+My report follows a single stroy: the mid-range penalty was always present in the math, which 
+Sections 4.1 (zone efficiency) and 4.3 (the shot-make model) establish; the Warriors provided the first clear,
+ winning demonstration and the league subsequently tipped, which Section 4.2 (the era time series) dates; and 
+ the roles that define success reorganized around the three-point arc, which Section 4.4 (the clustering) documents.
+  Taken together, these pieces answer the central questions of justification, timing, and consequence. 
+  The results point in a stark direction: the mid-range shot is consistently dominated, the tipping point 
+  arrives in the mid-2010s, and an entire archetype of player once central to offense nearly disappears from the modern game.
 
 # Data
 
 ## Source and Coverage
 
 The primary dataset is NBA shot-location records for all 21 seasons from 2003–04 through
-2024–25 (referred to throughout by the calendar year the season began, e.g., "2004" for
-2003–04). Data were sourced from the publicly available NBA_Shots_04_25 repository
-(Samangy, 2025), which aggregates shot-level records from the official NBA Stats API
+2024–25. Referred to throughout by the calendar year the season ended, for example, "2004" for
+2003–04. Data were sourced from the publicly available NBA_Shots_04_25 repository
+(Samangy, 2025) via github https://github.com/DomSamangy/NBA_Shots_04_25, which aggregates shot-level records from the official NBA Stats API
 (stats.nba.com). The raw dataset comprises 4,231,262 shot attempts across 26 columns,
 including court coordinates (`LOC_X`, `LOC_Y`), shot distance, zone classification
 (`BASIC_ZONE`), action type, shot type (2PT or 3PT), game context fields (quarter, minutes
 and seconds remaining), player and team identifiers, and a make/miss indicator.
 
 Raw CSV files were uploaded to Google Cloud Storage (bucket: `pstat135-adam`) and ingested
-using Apache Spark on a Google Cloud Dataproc cluster (single-node `e2-highmem-4`,
-`us-central1`, Dataproc image 2.2-debian12). Spark's schema inference confirmed the
-26-column structure and zero null values across all fields.
+using Apache Spark on a Google Cloud Dataproc cluster. Spark's schema inference confirmed the
+26-column structure and zero null values across all fields providing a thourough dataset for analysis.
 
 ## Cleaning and Feature Engineering
 
-Data preparation removed 8,820 backcourt shots (desperation heaves recorded with
-`ZONE_RANGE = "Back Court Shot"`) that do not represent genuine shooting decisions, yielding
+For data preparation, I removed 8,820 backcourt shots as haily marry attempts represented as, `ZONE_RANGE` = "Back Court Shot", do not represent genuine shooting decisions. This yielded
 **4,222,442 analysis-ready records**. Seven feature columns were added: `SECS_REMAINING`
 (clock context as a single integer), `IS_3PT` and `SHOT_VALUE` (two/three-point indicators),
 `IS_CLUTCH` (fourth quarter or overtime with ≤120 seconds remaining), `SHOT_MADE_INT`
@@ -90,31 +103,30 @@ Data preparation removed 8,820 backcourt shots (desperation heaves recorded with
 `EXPECTED_PTS` (`SHOT_VALUE × SHOT_MADE_INT`). The `ACTION_TYPE` field, which carries
 dozens of raw values, was consolidated into five broad buckets (Dunk, Layup, Hook,
 Jump Shot, Other) via keyword matching to prevent sparse one-hot expansion in model
-training; the residual "Other" category accounts for approximately 1.4% of shots.
+training. The residual "Other" category accounts for approximately 1.4% of shots.
 
 The cleaned dataset was written to GCS as Parquet, partitioned by season (`SEASON_1`),
-enabling efficient season-level filtering in downstream analyses.
+enabling easy season-level filtering in downstream analyses.
 
 ## Distributed Processing Justification
 
-A single season's records fit comfortably on a laptop. The justification for Spark lies in
+A single season's records fit comfortably on a laptop. My justification for Spark lies in
 the scope of the analyses performed here: zone efficiency aggregations over all 4.2 million
 shots, a 21-season time-series, a binary classifier trained on the full record pool, and
-PCA plus K-Means over all qualifying player-seasons. Spark's lazy evaluation model allows
-these operations to be expressed as logical plans and executed in a single distributed pass,
+PCA plus K-Means over all qualifying player-seasons. Spark's lazy evaluation model creates a logical plan as discussed in class and executed in a single distributed pass,
 which is the appropriate tool for cross-era analyses that must treat all seasons as one
 coherent dataset.
 
 ## Known Limitations
 
 Three data limitations are relevant to interpretation. First, the dataset contains no
-defender or contest information; the shot-make model therefore measures the value of shot
+defender or contest information. This means the shot-make model measures the value of shot
 *location and action type*, not the quality of shot selection under defensive pressure.
 Second, the 2012 season was shortened by a labor lockout to 66 games (versus the standard
 82), and the 2020 season was shortened and played in a bubble environment; both seasons
-show lower total attempt counts in @tbl-era and should not be interpreted as trend
-deviations. Third, cross-era rule changes — most notably the 2004–05 defensive hand-check
-rule tightening — may affect FG% comparisons between early and late seasons in this panel.
+show lower total attempt counts in the underlying season-by-season data and should not
+be interpreted as trend deviations. Third, cross-era rule changes, most notably the 2004–05 defensive hand-check
+rule tightening, may affect FG% comparisons between early and late seasons in this panel due to changes in defensive level.
 
 # Methodology
 
@@ -123,7 +135,7 @@ rule tightening — may affect FG% comparisons between early and late seasons in
 Zone efficiency was computed by grouping all shots by `BASIC_ZONE` and calculating
 attempt count, field-goal percentage (FG%), and points per attempt (pts/attempt =
 FG% × SHOT_VALUE). Points per attempt is the theoretically correct efficiency metric
-because it accounts for the value differential between two- and three-point shots,
+because it accounts for the value difference between two- and three-point shots,
 enabling a fair comparison: a 33.3% three-point shooter and a 50% two-point shooter
 are equally efficient at 1.0 pts/attempt. Six zones are present after backcourt
 removal: Restricted Area, In The Paint (Non-RA), Mid-Range, Left Corner 3, Right
@@ -131,64 +143,52 @@ Corner 3, and Above the Break 3.
 
 ## Era Analysis
 
-Three-point attempt rate (3PT attempts / total attempts × 100) and overall FG% were
-aggregated by season across all 21 seasons. The resulting time series (@tbl-era and
-@fig-era) spans the pre-analytics era through peak three-point adoption, capturing
-the full arc from 2004 to 2024.
+Three-point attempt rate (3PT attempts / total attempts × 100) was aggregated by season
+across all 21 seasons. The resulting time series (@fig-era) spans the pre-analytics era
+through peak three-point adoption, capturing the full arc from 2004 to 2024.
 
 ## Shot-Make Model
 
-A binary classification model predicts whether a given shot is made (`SHOT_MADE_INT = 1`).
-Three columns were excluded from the feature vector as leakage: `EXPECTED_PTS`
-(equals zero exactly when a shot is missed), `EVENT_TYPE` ("Made Shot"/"Missed Shot"),
-and `SHOT_MADE` (the boolean target itself).
-
-The **feature vector** (26 dimensions) comprises eight numeric features — `LOC_X`,
+I chose a binary classification model to predict whether a given shot is made.
+Three columns were excluded from the feature vector as leakage: `EXPECTED_PTS`, `EVENT_TYPE`,
+and `SHOT_MADE`. All of these provide explicit information on whether a shot is made hence thier removal. 
+The **feature vector** (26 dimensions) comprises eight numeric features: `LOC_X`,
 `LOC_Y`, `SHOT_DISTANCE`, `SECS_REMAINING`, `IS_3PT`, `SHOT_VALUE`, `IS_CLUTCH`,
-`QUARTER` — and four categorical features encoded via `StringIndexer` +
-`OneHotEncoder`: `BASIC_ZONE`, `SHOT_TYPE`, `ZONE_RANGE`, and `ACTION_GROUP`.
+`QUARTER`, and four categorical features: `BASIC_ZONE`, `SHOT_TYPE`, `ZONE_RANGE`, and `ACTION_GROUP`.
 All transformers were fit on the 80% training split and applied to the held-out
-20% test split (random seed 42) to prevent information leakage. `StringIndexer`
-used `handleInvalid="keep"` so categories appearing only in the test set are assigned
-a reserved bucket rather than crashing the job.
+20% test split (random seed 42). 
 
-**LASSO regularization path.** Feature importance was assessed by sweeping
-`regParam` over [0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001] with
-`elasticNetParam = 1.0` (pure L1 penalty), yielding active feature counts of
-3 → 5 → 9 → 16 → 21 → 26 as the penalty relaxes. The order in which features
-re-enter the model as regularization loosens provides a collinearity-robust
-importance ranking. Headline coefficients are reported at `regParam = 0.001`
-(16 of 26 features active), chosen as the penalty that preserves the zone
+**LASSO regularization path.** Feature importance was assessed adjusting the constricting L1 penalty over 
+the following values [0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], yielding respective feature counts of
+3 → 5 → 9 → 16 → 21 → 26. The order in which features
+re-enter the model as regularization loosens shows the collinearity of certain features. Headline coefficients are reported at `regParam = 0.001`
+(16 of 26 features active), chosen as the penalty that best preserves the zone
 structure without selecting all features back in.
 
 **Classifiers.** `LogisticRegression` (L2, `regParam = 0.01`) and `LinearSVC`
 (`regParam = 0.01`) were trained on the same feature vector and evaluated on the
-held-out test split using ROC-AUC and macro-F1. All analyses used the full dataset
-(`SAMPLE_FRACTION = None`), encompassing all 4,222,442 records.
+held-out test split using ROC-AUC and macro-F1. All analyses used the full dataset encompassing all 4,222,442 observations.
 
 ## Player Archetypes
 
-Player archetypes were identified by clustering player-season shot profiles. Each
-qualifying player-season was represented as a six-dimensional vector of zone shot
-shares (rim, paint, mid-range, left corner 3, right corner 3, above-the-break 3),
-which sum to one by construction. This compositional structure introduces a redundant
-direction (one share is determined by the other five), motivating PCA before clustering.
-
-The pipeline applied: (1) **StandardScaler** (zero mean, unit variance per dimension,
-to prevent high-variance zones from dominating PCA); (2) **PCA** retaining 5 of 6
-components (the sixth captures the near-zero compositional redundancy and is dropped);
-(3) **K-Means** at $k = 5$ (random seed 42), chosen based on silhouette score and
-interpretability of the resulting profiles. Era stability was assessed by holding
-cluster assignments fixed and comparing the share of player-seasons in each archetype
-for seasons before 2015 (`SEASON_1` < 2015) versus 2015 and after (`SEASON_1` ≥ 2015),
-with 2015 chosen as the inflection point identified in the era analysis (Section 4.2).
+Player archetypes were identified by clustering player-season shot profiles. Each player-season was represented 
+as a six-dimensional vector of zone shot shares (rim, paint, mid-range, left corner 3, right corner 3, 
+above-the-break 3), which sum to one. The data was standardized, followed by PCA to reduce dimensionality, 
+retaining 5 components. K-Means clustering was then applied with 'k=5' (random seed 42).
+Era stability was evaluated by holding cluster assignments fixed and comparing the distribution of 
+player-seasons across archetypes before 2015 (SEASON_1 < 2015) versus 2015 and later (SEASON_1 ≥ 2015).
 
 # Results
 
 ## Zone Efficiency: The Mid-Range Penalty {#sec-zone}
 
 @tbl-zone reports field-goal percentage and points per attempt for each of the six
-shot zones across all 4,222,442 shots in the dataset.
+shot zones across all 4,222,442 shots in the dataset. Notably the Restricted Area is the most efficient
+ with a Pts/Attempt of 1.232 which makes practical sense. The table also shows the inefficency of the mid-range
+ being the lowest Pts/Attempt at 0.798 a solid margin away from the lowest 3pt range being Above the Break at 1.054.
+ This table perfectly shows in numeric form why the 3pt takeover made statistical sense for the league.
+ With both shot types being near same percentage (39.9% vs 35.1%), the extra 1pt from the three is obviously
+ worth the slightly lower make percentage.
 
 ```{python}
 #| label: tbl-zone
@@ -202,92 +202,28 @@ df["Pts/Attempt"] = df["Pts/Attempt"].apply(lambda x: f"{x:.3f}")
 Markdown(df.to_markdown(index=False))
 ```
 
-<!-- WRITE: Interpret @tbl-zone as the core quantitative case for why the analytics movement
-called the mid-range "the worst shot in basketball." The key numbers to engage: Mid-Range
-(0.798 pts/attempt) vs. Above the Break 3 (1.054 pts/attempt) is a 32% efficiency gap on
-shots with nearly identical FG% (39.9% vs. 35.1%) — the value comes entirely from the
-extra point, not from making a higher percentage. The Restricted Area (1.232 pts/attempt)
-is in a class of its own; the Corner 3s (1.159–1.164) are second only to the rim. The
-mid-range sits last. Explain to a reader why identical make-rates but different values
-create such different efficiency outcomes, and why this matters for team strategy. -->
-
-<!-- WRITE: Note the total attempt counts as evidence of strategic behavior changing over
-time: Mid-Range (1,037,841) still represents a large slice of the dataset because the early
-seasons pull the numbers up; the era plot in @sec-era will show how its share has shrunk.
-The Corner 3 counts (146,724 and 159,656) are relatively small because the corner is a
-limited space — but their efficiency makes every available corner-3 attempt highly valuable.
-This table sets up Section 4.3's argument that location, not context, drives shot value. -->
 
 ## Era Inflection: When the League Changed {#sec-era}
 
-@tbl-era shows three-point attempt rate and overall FG% for every season from 2004 to
-2024. @fig-era plots the three-point rate as a time series.
+@fig-era plots the three-point attempt rate by season as a time series. Total shot attempts in the league remained stable around 200,000 each year.
+Looking at share of field goal attempts that are 3pt shots reflects era change from the mid range to the 3pt shot.
+The figure shows roughly flat aron 22% up until 2012 where it begins to steadily increase with the sharpest increase being from 2015-2017.
+This time is also the Warriors Dynasty where their star play Stephen Curry became one of the first players to dominate strictly from the 3pt line.
+This team along with the stats shown in the figure represent the physical evidence of the league changing its
+typical play style to reflect this more efficient game plan. Additionally to be noted, the increase in 3pt shot take percentage has yet to fully plateau reaching a high of 39.4% in 2024. Whether the league has found a ceiling is yet to be seen 
+but due to defense adjustment along with other factors is likely to flatten eventually.
 
-```{python}
-#| label: tbl-era
-#| tbl-cap: "Three-point attempt rate and overall field-goal percentage by season (2004–2024). The 2012 season was lockout-shortened to 66 games; the 2020 season was played in a bubble environment. Both explain the lower attempt totals in those rows."
-
-df = pd.read_csv("tables/three_pt_rate_by_season.csv")
-df.columns = ["Season", "Total Attempts", "3PT Attempts", "3PT Rate", "FG%"]
-df["Total Attempts"] = df["Total Attempts"].apply(lambda x: f"{x:,}")
-df["3PT Attempts"] = df["3PT Attempts"].apply(lambda x: f"{x:,}")
-df["3PT Rate"] = df["3PT Rate"].apply(lambda x: f"{x:.1f}%")
-df["FG%"] = df["FG%"].apply(lambda x: f"{x:.1f}%")
-Markdown(df.to_markdown(index=False))
-```
-
-![Three-point attempt rate by season, 2004–2024. The rate sat near 22% for approximately six seasons (2008–2013), then accelerated sharply from 26.7% in 2015 to 31.4% in 2017, and continued rising to a plateau of approximately 38–40% from 2020 onward.](fig2_three_pt_rate_by_season.png){#fig-era width=90% fig-align="center"}
-
-<!-- WRITE: Interpret the inflection. The plateau at ~22% from 2008–2013 and then the sharp
-acceleration starting in 2015 is the central finding of this section. Connect the timing to
-the Golden State Warriors: their 2015 title and Curry's 2015–16 unanimous MVP season
-correspond precisely to the two-year jump from 26.7% to 31.4%. The plateau at 38–40% from
-2020 onward raises the question of whether the league has found a ceiling — discuss what
-structural limits might prevent the rate from rising further (court geometry, player skill
-distribution, defensive adjustments). Be specific about which years you are describing;
-use the numbers from @tbl-era to anchor the claims. -->
-
-<!-- WRITE: Address the "why now" question that the math alone cannot answer. If the points-
-per-attempt gap in @tbl-zone always existed, what changed in 2015? This is where you
-discuss the role of proof-of-concept (the Warriors winning 73 games), the spread of
-analytics front offices, and the selection effects on player development pipelines. Honest
-caveat: the trend predates the Warriors (the rate was already rising from 2013–2015); they
-accelerated a shift that was already under way. -->
+![Three-point attempt rate by NBA season (three-point attempts as a share of total field-goal attempts), computed over all 4.22 million shots in the panel. Seasons are labeled by the year they ended; 2004 denotes the 2003–04 season. The shaded band and the 2016 annotation are added to mark the acceleration window and a contextual milestone, and are not features of the data. Because the metric is a normalized rate, the lockout-shortened 2012 and bubble-shortened 2020 seasons are unaffected by their lower game counts.](fig2_three_pt_rate_by_season.png){#fig-era width=90% fig-align="center"}
 
 ## Shot-Make Model: Location Over Context {#sec-model}
 
-@fig-lasso shows the LASSO regularization path. @tbl-lasso-coeff reports the
-headline coefficients at `regParam = 0.001`. @tbl-model-compare reports classifier
-performance on the held-out test split.
+@fig-lasso-coeff reports the headline LASSO coefficients at `regParam = 0.001`. Most notably and supporting the current
+shot make model action and location type features are the only prevalent ones with only one contextual feature making it (Clutch Situation).
+In addition to the figure, when the parameter is at its strongest only 3 features survive none of them being contextual. This in turn shows that 
+the location and type of shot are the best predictors of a shot make futher supporting the statistical idea of moving the area a shot is made to increase point acquisition.
 
-![LASSO regularization path. Left panel: coefficient trajectories for the eight features with the largest peak magnitude as the penalty (regParam) relaxes from left to right. Right panel: number of active (nonzero) features at each penalty level. Context features (QUARTER, IS_CLUTCH, SECS_REMAINING) enter the model only at the weakest penalties and carry small coefficients throughout.](fig3_lasso_path.png){#fig-lasso width=100% fig-align="center"}
 
-```{python}
-#| label: tbl-lasso-coeff
-#| tbl-cap: "LASSO coefficients at regParam = 0.001 (16 of 26 features active), sorted by absolute value. Positive values indicate higher make probability; negative values indicate lower. Features zeroed by LASSO at this penalty level are omitted. The Back Court Shot coefficient (−1.342) reflects a small residual of backcourt records that survived Phase 2 cleaning and does not affect any substantive conclusion."
-
-df = pd.read_csv("tables/lasso_coefficients.csv")
-df = df[df["coefficient"] != 0.0].copy()
-df["abs"] = df["coefficient"].abs()
-df = df.sort_values("abs", ascending=False).drop(columns="abs")
-
-def clean_feat(s):
-    s = s.replace("ACTION_GROUP_ohe_", "Action: ")
-    s = s.replace("BASIC_ZONE_ohe_", "Zone: ")
-    s = s.replace("ZONE_RANGE_ohe_", "Range: ")
-    s = s.replace("SHOT_TYPE_ohe_", "Type: ")
-    s = s.replace("IS_CLUTCH", "Clutch Situation (Q4/OT, ≤120 s)")
-    s = s.replace("SHOT_DISTANCE", "Shot Distance (ft)")
-    s = s.replace("QUARTER", "Quarter")
-    s = s.replace("SECS_REMAINING", "Seconds Remaining")
-    s = s.replace("LOC_Y", "Court Y Coordinate")
-    return s
-
-df["feature"] = df["feature"].apply(clean_feat)
-df["coefficient"] = df["coefficient"].apply(lambda x: f"{x:+.4f}")
-df.columns = ["Feature", "Coefficient"]
-Markdown(df.to_markdown(index=False))
-```
+![LASSO coefficients at regParam = 0.001, colored by feature category (Action, Location, Context). Positive values indicate higher make probability; negative values indicate lower. Features with |coefficient| < 0.02 are omitted as negligible for chart clarity, and the Back Court Shot coefficient (≈ −1.34) is excluded as stated earlier being considered an outlier, unimportant feature.](fig4_lasso_coefficients.png){#fig-lasso-coeff width=85% fig-align="center"}
 
 ```{python}
 #| label: tbl-model-compare
@@ -300,16 +236,12 @@ df["accuracy"] = df["accuracy"].apply(lambda x: f"{x:.3f}")
 df.columns = ["Model", "ROC-AUC", "F1", "Accuracy"]
 Markdown(df.to_markdown(index=False))
 ```
+@tbl-model-compare reports the classifier performance on the held-out test split. An ROC-AUC of 0.629 is modest but still 
+and improvement from baseline 54% which would be a consistent miss guess (46% make rate). Without additional difficulty of shot via defender or contest 
+data further improvement is unlikely. The agreement between the LogisticRegression and LinearSVC
+ models point to a robust conclusion of feature importance in shot make prediction.
 
-<!-- WRITE: Interpret the LASSO path in @fig-lasso as the "location dominates context"
-finding. At the strongest penalties (left side of @fig-lasso), only three features survive:
-Restricted Area zone, Dunk action, and Jump Shot action — pure location and action signals.
-Context features (Quarter, IS_CLUTCH, Seconds Remaining) enter only at the weakest penalties
-and with small coefficients. Explain what this means in plain terms: the single best predictor
-of whether a shot goes in is WHERE and HOW it is taken, not the game situation. This is the
-quantitative test of Act 1's claim. -->
-
-<!-- WRITE: Interpret @tbl-lasso-coeff. The Dunk coefficient (+1.936) is by far the largest;
+<!-- WRITE: Interpret @fig-lasso-coeff. The Dunk coefficient (+1.936) is by far the largest;
 discuss what this means (dunks are the highest-percentage shot class, which LASSO picks up
 immediately). The Restricted Area zone (+0.295) is positive as expected. Crucially,
 BASIC_ZONE: Mid-Range and BASIC_ZONE: Above the Break 3 are both zeroed at this penalty —
@@ -318,6 +250,7 @@ type are known, the specific zone label adds no extra make-probability signal. T
 directly back to @tbl-zone: mid-range and above-the-break 3 have nearly identical FG%,
 so the zone label carries no information beyond what shot distance already captures. The
 mid-range's problem is points per attempt (Table 1), not make probability. -->
+
 
 <!-- WRITE: Interpret @tbl-model-compare honestly. ROC-AUC of 0.629 is a modest result —
 acknowledge it. The expected ceiling for location/action-only data is roughly 0.65–0.70
@@ -329,11 +262,9 @@ result is stable. -->
 
 ## Player Archetypes: Who Thrived After the Revolution {#sec-archetypes}
 
-@tbl-cluster-profiles describes the five archetypes identified by K-Means clustering
-of 6,451 qualifying player-seasons. @tbl-cluster-era compares archetype prevalence
-before and after the 2015 inflection point. @fig-archetypes shows the PCA scatter of
-all player-seasons colored by cluster. @fig-era-shift shows the before/after population
-breakdown by archetype.
+Now I begin to look at player types based on different shots taken by that respective player. This is done over multiple seasons the player was in to 
+see if the shot era inflection affected player type popularity in the league. Seperating the features via PCA and then running a K-means
+to group the players into 5 different archetypes. 
 
 ```{python}
 #| label: tbl-cluster-profiles
@@ -359,27 +290,33 @@ df.columns = ["Archetype", "N", "Rim", "Paint", "Mid-Range",
 Markdown(df.to_markdown(index=False))
 ```
 
-```{python}
-#| label: tbl-cluster-era
-#| tbl-cap: "Archetype prevalence before and after the 2015 inflection point. Pre-2015: seasons 2004–2014 (3,207 player-seasons). Post-2015: seasons 2015–2024 (3,244 player-seasons). Δ is the change in percentage-point share of the qualifying player-season pool."
+@tbl-cluster-profiles shows the shot take percentages of all the players in the NBA from 2004-2024 creating five distinct archetypes.
+Each has a signature zone or role the first being the Rim-Dominant Big--a physical player getting most of their points close to the basket with near zero threes.
+ A mid-range specialist shooting but not from three point range. The Floor-spacing specialist with a high three point volume from the corner.
+ The high-volume perimetor creator usually the point guard shooting both three point and mid range shots. Finaly the Modern Versatile scorer which
+ has a balance of all the shot types. Respective shot percentages are shown in the table outting numbers to the descriptions. 
 
-df = pd.read_csv("tables/cluster_by_era.csv")
-df["Archetype"] = df["cluster"].map(LABELS)
-df = df[["Archetype", "pre", "pre_pct", "post", "post_pct", "delta_pct"]]
-df["pre"] = df["pre"].apply(lambda x: f"{x:,}")
-df["post"] = df["post"].apply(lambda x: f"{x:,}")
-df["pre_pct"] = df["pre_pct"].apply(lambda x: f"{x:.1f}%")
-df["post_pct"] = df["post_pct"].apply(lambda x: f"{x:.1f}%")
-df["delta_pct"] = df["delta_pct"].apply(
-    lambda x: f"+{x:.1f} pp" if x > 0 else f"{x:.1f} pp"
-)
-df.columns = ["Archetype", "Pre (n)", "Pre (%)", "Post (n)", "Post (%)", "Δ"]
-Markdown(df.to_markdown(index=False))
-```
+![PCA scatter of 6,451 player-seasons colored by K-Means cluster (k = 5). PC1 and PC2 are the two dominant axes of shot-selection
+ variation. Cluster separation reflects distinct shot profiles; see @tbl-cluster-profiles for the zone-share interpretation of each
+  archetype.](fig5_archetype_map.png){#fig-archetypes width=90% fig-align="center"}
 
-![PCA scatter of 6,451 player-seasons colored by K-Means cluster (k = 5). PC1 and PC2 are the two dominant axes of shot-selection variation. Cluster separation reflects distinct shot profiles; see @tbl-cluster-profiles for the zone-share interpretation of each archetype.](fig5_archetype_map.png){#fig-archetypes width=90% fig-align="center"}
+@fig-archetypes shows the graphical representation fo the first 2 PCA vectorrs representing interior-perimeter shooting seperation (PC1 51% of variability)on the x-axis and
+mid-range to rim seperation (PC2 23% of variability) on the y-axis.Together holding 74.5% of the variation the geometry cleanly shows the different
+player archetypes via color of the figure. There are overlaps and blurs at the border, however this is expected for a real life dataset like the NBA.
 
-![Archetype population shift before and after 2015. Each bar shows the percentage of qualifying player-seasons assigned to that archetype in the pre-2015 (seasons 2004–2014) and post-2015 (seasons 2015–2024) periods. The Mid-Range Specialist archetype declined 29.6 percentage points; the Modern Versatile Scorer grew 27.7 percentage points.](fig6_archetype_era_shift.png){#fig-era-shift width=90% fig-align="center"}
+![Archetype population shift before and after 2015. Each bar shows the percentage of qualifying player-seasons assigned to that
+ archetype in the pre-2015 (seasons 2004–2014) and post-2015 (seasons 2015–2024) periods. The Mid-Range Specialist archetype 
+ declined 29.6 percentage points; the Modern Versatile Scorer grew 27.7 percentage points.](fig6_archetype_era_shift.png){#fig-era-shift width=90% fig-align="center"}
+
+@fig-era-shift perfectly represents the change in player type before and after the 3pt transition. Mid-Range Scorer was the most
+populated archetype pre-era and dropped -29.6 points to almost non existent current era numbers. High-volume perimeter and Rim-Dominant Big
+both see decreases as well however being much smaller at -5.2 and -2.3 respectively. The Floor-Spacing Specialist and Modern Versatile scorer 
+saw increases in presence at +9.6 and +27.7 respectively showing the obvious increase in the balanced scorer. This reorganization of scoring
+types shows the power of transition the three point era had eliminating most players who could not adjust. 
+
+We most hold in account that the archetypes are built from shot location only, capturing no defensive presence resulting in an incomplete player profile.
+However, this should not affect the interpretation of the offensive change in the NBA requiring teams to also adjust defense. Changes in both should be expected
+and even possibly correlated by era. 
 
 <!-- WRITE: Interpret @tbl-cluster-profiles. Walk through each archetype by its dominant
 zone shares. The Rim-Dominant Big (cluster 1) takes 59.3% of shots at the rim with
@@ -411,27 +348,34 @@ direction of the finding. -->
 
 # Conclusion and Future Study
 
-<!-- WRITE: Synthesize the three acts into one coherent answer to the core question: how
-did the three-point revolution reshape the NBA? The three findings — (1) the pts/attempt
-gap favoring threes and rim attempts over mid-range, (2) the 2015–2017 inflection point
-in attempt rates, (3) the decline of the mid-range specialist and rise of versatile
-perimeter scorers — together constitute a quantitative narrative. Be specific about which
-numbers you are summarizing. Do not introduce new analyses or claims in the conclusion. -->
+This study set out to answer three connected questions: whether the NBA’s shift toward the three-point shot was mathematically justified,
+ when the league fully embraced it, and what that shift did to the types of players who define success. The evidence presented here points
+  to an obvious answer: the transition was not only justified but effectively inevitable, it accelerated sharply in the mid-2010s, and it fundamentally
+   reorganized player roles around the three-point line.
 
-<!-- WRITE: Acknowledge what the data cannot prove. The shot-make model reaches AUC 0.629
-because it lacks defender and contest data; the efficiency gap in Table 1 reflects
-league-average outcomes, not individual quality; correlation with the Warriors dynasty
-does not establish causation. These limitations do not undermine the findings, but they
-define the scope of the claim. -->
 
-<!-- WRITE: Propose 2–3 concrete future study directions drawn naturally from the
-limitations above. Candidates include: (1) incorporating defender tracking data (Second
-Spectrum / NBA Advanced Stats) to isolate "contested vs. open" efficiency, separating
-shot quality from shot selection; (2) a GraphFrames assist-network analysis to trace
-how playmaking role changes (e.g., pass-to-corner-3 as a designed play) reinforced the
-shot-selection shift; (3) a player-transition analysis asking whether specific players
-successfully migrated from mid-range specialist to a three-point-heavy profile across
-their careers, and what predicted success in that migration. -->
+Taken together, the results form a single, coherent chain of cause, adoption, and consequence. The underlying math always favored the three-point shot:
+ mid-range attempts produced just 0.798 points per attempt compared to 1.054 for above-the-break threes
+  establishing a structural efficiency gap built into the game itself. This advantage is reinforced by the shot-make model, where location and action
+   type dominate contextual game features, indicating that where a shot is taken matters more than when or under what circumstances it occurs.
+    The league’s behavior ultimately aligned with this reality, as the three-point attempt rate rose from 18.6% in 2004 to 39.4% in 2024, with
+     the most dramatic acceleration occurring between 2015 and 2017 (Warriors dominance). Finally, this strategic shift reshaped the player landscape: the mid-range
+      specialist archetype declined from 37.3% to 7.7% of player-seasons, while the modern balanced scorer expanded from 8.1% to 35.8%,
+       reflecting a league now built around spacing and perimeter efficiency. These are not independent findings, they describe a single 
+       transformation from mathematical incentive to league-wide adoption to structural change in player roles.
+
+Several limitations are important to acknowledge. First, the shot-make model’s modest predictive performance (ROC-AUC = 0.629) reflects a key
+ data constraint: the absence of defender proximity and contest information, meaning the model captures the value of shot location and type, 
+ not true shot difficulty. Second, while the alignment between efficiency math and league behavior is clear, this study shows association rather
+  than proving a direct causal relationship for the change in strategy. Third, cross-era comparisons are influenced by external factors, including
+   rule changes such as the 2004–05 hand-check adjustment and shortened seasons in 2012 and 2020 which were breifly mentioned. Finally, the player archetype analysis is based
+    solely on shot location and relies on a fixed 2015 cutoff, which simplifies a more gradual and multidimensional evolution of player roles.
+
+Future work can build directly on these gaps. The most important extension would be incorporating defender tracking and contest data to model 
+true shot quality, allowing for a clearer distinction between shot selection and shot difficulty. A second direction is to examine how ball movement and team structure evolved alongside shot selection during this transition. Finally, a more 
+ detailed robustness and fairness analysis across eras, zones, and player groups could test the stability of these findings and identify where the 
+ model performs differently. Taken together, these extensions would move the analysis from describing the three-point revolution to fully explaining
+  the mechanisms behind it, offering a deeper understanding of how strategy evolves in professional basketball.
 
 # References
 
@@ -441,26 +385,9 @@ https://github.com/DomSamangy/NBA_Shots_04_25
 National Basketball Association. (2025). *NBA Stats API*.
 https://www.stats.nba.com
 
-Mexwell. (2024). *NBA shots* [Data set]. Kaggle.
-https://www.kaggle.com/datasets/mexwell/nba-shots
-
-Apache Software Foundation. (2025). *Apache Spark documentation* (Version 3.5).
-https://spark.apache.org/docs/latest/
-
-Apache Software Foundation. (2025). *MLlib: Machine learning library guide*.
-https://spark.apache.org/docs/latest/ml-guide.html
-
-Google Cloud. (2025). *Dataproc documentation*.
-https://cloud.google.com/dataproc/docs
-
-<!-- WRITE: Add any course readings, lecture notes, or external sources you cite in the
-body of the paper (e.g., analytics-movement books or articles, Warriors dynasty references,
-or any statistics / machine-learning references for LASSO, K-Means, or PCA that you cite
-by name in the text). Use APA 7th edition format. -->
-
 # Appendix: Representative Code {.unnumbered}
 
-The following excerpts are representative PySpark segments from the analysis scripts
+The following code chunks are representative PySpark segments from the analysis scripts
 committed to the project repository. Full scripts are available in the repository
 at `02_processing/process_shots.py`, `03_shot_model/shot_model.py`,
 `03_shot_model/feature_engineering.py`, and `05_clustering/archetypes.py`.
@@ -543,15 +470,3 @@ era_counts = (
     .withColumn("pct", F.round(F.col("count") / era_totals[F.col("ERA")] * 100, 1))
 )
 ```
-
-# AI-Use Statement {.unnumbered}
-
-<!-- WRITE: This section is required by course policy and must honestly and specifically
-describe every AI tool used in the project and how it was used. Cover at minimum:
-(1) which AI tools (e.g., Claude, ChatGPT, GitHub Copilot) were used and in what capacity;
-(2) which parts of the project AI assisted with (e.g., debugging PySpark errors, explaining
-MLlib API options, generating this report scaffold, explaining PCA or LASSO concepts);
-(3) which parts you wrote or coded yourself without AI assistance;
-(4) how you verified AI-generated content for correctness.
-Be specific about what AI produced versus what you produced. Vague statements like
-"I used AI as a learning tool" do not satisfy the attribution requirement. -->

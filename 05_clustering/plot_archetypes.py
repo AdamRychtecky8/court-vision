@@ -34,13 +34,14 @@ ERA_CSV = HERE / "cluster_by_era.csv"
 FIG5_OUT = HERE.parent / "report" / "fig5_archetype_map.png"
 FIG6_OUT = HERE.parent / "report" / "fig6_archetype_era_shift.png"
 
-# Cluster ID -> human name + a stable color. Confirm against the profile table.
+# Cluster ID -> human name + a stable color. Must match LABELS in report/report.qmd
+# (tbl-cluster-profiles) so the table and figures use the same archetype names.
 CLUSTER_NAMES = {
-    0: "Balanced Wing",
-    1: "Rim-Running Big",
-    2: "Floor Spacer",
-    3: "Perimeter Creator",
-    4: "Mid-Range Scorer",
+    0: "Modern Versatile Scorer",
+    1: "Rim-Dominant Big",
+    2: "Floor-Spacing Specialist",
+    3: "High-Volume Perimeter",
+    4: "Mid-Range Specialist",
 }
 CLUSTER_COLORS = {
     0: "#1D428A",  # blue
@@ -65,7 +66,7 @@ for cid, name in CLUSTER_NAMES.items():
     ax.scatter(cx, cy, s=180, color=CLUSTER_COLORS[cid],
                edgecolor="black", linewidth=1.4, zorder=5)
     ax.annotate(name, (cx, cy), fontsize=10, fontweight="bold",
-                ha="center", va="center", color="white", zorder=6)
+                ha="center", va="center", color="black", zorder=6)
 
 # Axis labels spell out what the PCA axes MEAN (from the loadings), so the map is readable.
 ax.set_xlabel("PC1 (51.5%):   interior  ←——————→  perimeter", fontsize=11)

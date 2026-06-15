@@ -2,7 +2,7 @@
 
 **A distributed-computing analysis of 4.2 million NBA shots (2004–2024) that quantifies why the three-point shift was mathematically inevitable, when it accelerated, and how it reorganized the league's player roles.**
 
-> **Core question:** The NBA underwent a three-point revolution — but was it inevitable, when exactly did it tip, and what did it do to the kinds of players who succeed? This project answers all three with one coherent dataset and three connected analyses.
+> **Core question:** The NBA underwent a three-point revolution. Was it inevitable, when exactly did it tip, and what did it do to the kinds of players who succeed? This project answers all three with one coherent dataset and three connected analyses.
 
 ## Key findings
 
@@ -26,7 +26,7 @@ flowchart LR
     G --> H[Quarto report PDF<br/>+ matplotlib figures]
 ```
 
-Heavy compute runs on the cluster; the report is a thin presentation layer over small saved result tables — compute and presentation cleanly separated.
+Heavy compute runs on the cluster; the report is a thin presentation layer over small saved result tables, compute and presentation cleanly separated.
 
 ## Tech stack
 
@@ -77,8 +77,8 @@ court-vision/
 
 ## Limitations
 
-The dataset has no defender or contest information, so the shot-make model measures the value of shot *location*, not shot *quality* under pressure — hence the honest, modest AUC. Cross-era comparisons are confounded by rule changes (2004–05 hand-check tightening) and shortened seasons (2012 lockout, 2020 bubble). The era split at 2015 is a chosen inflection point, not a discontinuity.
+The dataset has no defender or contest information, so the shot-make model measures the value of shot *location*, not shot *quality* under pressure, creating the honest, modest AUC. Cross-era comparisons are confounded by rule changes (2004–05 hand-check tightening) and shortened seasons (2012 lockout, 2020 bubble). The era split at 2015 is a chosen inflection point, not a discontinuity.
 
 ## AI-use note
 
-AI assistance (Anthropic's Claude) was used for project planning, drafting and documenting the analysis scripts, explaining methods, and assembling this report; all analytical decisions, interpretation, and writing were reviewed and authored by the project owner. See the report's AI-Use Statement for specifics.
+AI assistance (Anthropic's Claude) was used for project planning, drafting and documenting the analysis scripts, explaining methods, and assembling this report; all analytical decisions, interpretation, and writing were authored and reviewed by myself. See the report's AI-Use Statement for specifics.
