@@ -43,20 +43,19 @@ Heavy compute runs on the cluster; the report is a thin presentation layer over 
 The full pipeline runs as PySpark jobs submitted to Dataproc. Datasets (~2–3 GB) live in GCS, not in the repo.
 
 ```bash
-# 1. start the cluster
 gcloud dataproc clusters start mycluster
-
-# 2. submit jobs in order (ingest -> process -> model)
+gcloud dataproc jobs submit pyspark 01_ingestion/verify_shots.py --cluster=mycluster
 gcloud dataproc jobs submit pyspark 02_processing/process_shots.py --cluster=mycluster
 gcloud dataproc jobs submit pyspark 03_shot_model/shot_model.py \
     --cluster=mycluster --py-files=03_shot_model/feature_engineering.py
 gcloud dataproc jobs submit pyspark 05_clustering/archetypes.py \
     --cluster=mycluster --py-files=05_clustering/player_features.py
-
-# 3. stop the cluster (it bills while running)
 gcloud dataproc clusters stop mycluster
+python 04_era_analysis/plot_era.py
+python 03_shot_model/plot_lasso_coefficients.py
+python 03_shot_model/plot_lasso_path.py
+python 05_clustering/plot_archetypes.py
 
-# 4. render the report locally
 quarto render report/report.qmd
 ```
 
@@ -66,12 +65,14 @@ quarto render report/report.qmd
 court-vision/
 ├── 01_ingestion/      # download + GCS upload + verification
 ├── 02_processing/     # PySpark cleaning + feature engineering -> Parquet
-├── 03_shot_model/     # LASSO feature selection + classification
+├── 03_shot_model/     # LASSO feature selection + classification + figures
 ├── 04_era_analysis/   # 3-point-rate time series + figure
 ├── 05_clustering/     # PCA + K-Means player archetypes + figures
 ├── report/            # Quarto report (.qmd -> PDF) + figures + tables
 ├── data/README.md     # schema of every processed column (no data files)
-└── 03_shot_model/key_findings.md   # shot-make model findings, with rationale
+├── 03_shot_model/key_findings.md   # shot-make model findings, with rationale
+├── requirements.txt   # pinned Python dependencies
+└── LICENSE            # MIT
 ```
 
 ## Limitations
