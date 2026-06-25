@@ -1,10 +1,15 @@
+from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv("report/tables/lasso_path.csv")
+HERE = Path(__file__).resolve().parent
+CSV_IN = HERE.parent / "report" / "tables" / "lasso_path.csv"
+PNG_OUT = HERE.parent / "report" / "fig3_lasso_path.png"
+
+df = pd.read_csv(CSV_IN)
 
 # Count non-zero coefficients per regParam
 counts = df[df['coefficient'] != 0.0].groupby('regParam')['feature'].count().reset_index()
@@ -51,5 +56,5 @@ for _, row in counts.iterrows():
                  textcoords='offset points', xytext=(0, 8), ha='center', fontsize=9)
 
 plt.tight_layout()
-plt.savefig('report/fig3_lasso_path.png', dpi=150, bbox_inches='tight')
-print("Saved report/fig3_lasso_path.png")
+plt.savefig(PNG_OUT, dpi=150, bbox_inches='tight')
+print(f"Saved {PNG_OUT}")

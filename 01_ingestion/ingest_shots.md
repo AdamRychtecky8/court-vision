@@ -39,20 +39,20 @@ The local `data/` folder is gitignored — raw data is never committed to the re
 
 **Upload command (run from court-vision/ root):**
 ```powershell
-gcloud storage cp data\raw\NBA_*_Shots.csv gs://pstat135-adam/raw/shots/
+gcloud storage cp data\raw\NBA_*_Shots.csv gs://<YOUR_GCS_BUCKET>/raw/shots/
 ```
 
 **Verify files landed:**
 ```powershell
-gcloud storage ls gs://pstat135-adam/raw/shots/
+gcloud storage ls gs://<YOUR_GCS_BUCKET>/raw/shots/
 ```
 
 Files confirmed in GCS:
 ```
-gs://pstat135-adam/raw/shots/NBA_2004_Shots.csv
-gs://pstat135-adam/raw/shots/NBA_2005_Shots.csv
+gs://<YOUR_GCS_BUCKET>/raw/shots/NBA_2004_Shots.csv
+gs://<YOUR_GCS_BUCKET>/raw/shots/NBA_2005_Shots.csv
 ...
-gs://pstat135-adam/raw/shots/NBA_2024_Shots.csv
+gs://<YOUR_GCS_BUCKET>/raw/shots/NBA_2024_Shots.csv
 ```
 (21 files total, 2004–2024)
 
@@ -104,7 +104,7 @@ Cluster: mycluster (single-node e2-highmem-4, us-central1)
 
 ---
 
-## Key Discoveries (document in DECISIONS.md)
+## Key Discoveries
 
 Column names differ from the NBA Stats API standard. All Phase 2+ code
 must use the actual names confirmed here:
@@ -124,6 +124,6 @@ both exist — use `SEASON_1` for all groupBy and sorting operations.
 ## GCS Location
 
 ```
-gs://pstat135-adam/raw/shots/NBA_*_Shots.csv   ← raw input (this phase)
-gs://pstat135-adam/processed/shots/            ← Parquet output (Phase 2)
+gs://<YOUR_GCS_BUCKET>/raw/shots/NBA_*_Shots.csv   ← raw input (this phase)
+gs://<YOUR_GCS_BUCKET>/processed/shots/            ← Parquet output (Phase 2)
 ```

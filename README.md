@@ -69,10 +69,9 @@ court-vision/
 ├── 03_shot_model/     # LASSO feature selection + classification
 ├── 04_era_analysis/   # 3-point-rate time series + figure
 ├── 05_clustering/     # PCA + K-Means player archetypes + figures
-├── report/            # Quarto report (.qmd -> PDF) + figures
+├── report/            # Quarto report (.qmd -> PDF) + figures + tables
 ├── data/README.md     # schema of every processed column (no data files)
-├── DECISIONS.md       # every non-obvious decision, with rationale
-└── results/key_findings.md
+└── 03_shot_model/key_findings.md   # shot-make model findings, with rationale
 ```
 
 ## Limitations
@@ -81,4 +80,4 @@ The dataset has no defender or contest information, so the shot-make model measu
 
 ## AI-use note
 
-AI assistance (Anthropic's Claude) was used for project planning, drafting and documenting the analysis scripts, explaining methods, and assembling this report; all analytical decisions, interpretation, and writing were authored and reviewed by myself. See the report's AI-Use Statement for specifics.
+AI assistance (Anthropic's Claude) was used for project planning, drafting and documenting the analysis scripts, explaining methods, and assembling this report; all analytical decisions, interpretation, and writing were authored and reviewed by myself. In addition, as this was a learning based project heavy AI commenting was initially used while developing code and later cleaned while rereading decision making. 

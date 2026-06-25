@@ -9,7 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  
 
 HERE = Path(__file__).resolve().parent
-CSV_IN = HERE / "three_pt_rate_by_season.csv"
+CSV_IN = HERE.parent / "report" / "tables" / "three_pt_rate_by_season.csv"
 PNG_OUT = HERE.parent / "report" / "fig2_three_pt_rate_by_season.png"
 
 # Columns: SEASON_1, total_attempts, three_pt_attempts, three_pt_rate_pct, overall_fg_pct

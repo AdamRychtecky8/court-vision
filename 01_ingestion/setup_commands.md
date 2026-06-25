@@ -14,7 +14,7 @@ you never have to specify them on every command:
 ```powershell
 gcloud init
 gcloud auth login
-gcloud config set project pstat135-hw-497220
+gcloud config set project <YOUR_GCP_PROJECT_ID>
 gcloud config set compute/region us-central1
 gcloud config set compute/zone us-central1-a
 gcloud config set dataproc/region us-central1
@@ -44,7 +44,7 @@ If you see "missing permissions: storage.buckets.get" when creating a cluster,
 run this and wait ~60 seconds before retrying the create:
 
 ```powershell
-gcloud projects add-iam-policy-binding pstat135-hw-497220 --member="serviceAccount:171975187367-compute@developer.gserviceaccount.com" --role="roles/dataproc.worker"
+gcloud projects add-iam-policy-binding <YOUR_GCP_PROJECT_ID> --member="serviceAccount:<YOUR_PROJECT_NUMBER>-compute@developer.gserviceaccount.com" --role="roles/dataproc.worker"
 ```
 
 ---
@@ -53,13 +53,13 @@ gcloud projects add-iam-policy-binding pstat135-hw-497220 --member="serviceAccou
 
 | Field       | Value                          |
 |-------------|-------------------------------|
-| Bucket name | pstat135-adam                  |
+| Bucket name | `<YOUR_GCS_BUCKET>`            |
 | Location    | US (multi-region)              |
-| Project     | pstat135-hw-497220             |
+| Project     | `<YOUR_GCP_PROJECT_ID>`         |
 
 **GCS folder structure:**
 ```
-gs://pstat135-adam/
+gs://<YOUR_GCS_BUCKET>/
 ├── raw/
 │   ├── shots/       ← raw shot CSV (Phase 1)
 │   └── pbp/         ← raw play-by-play files (Phase 1 part 2)
@@ -121,7 +121,7 @@ gcloud dataproc jobs submit pyspark SCRIPT_NAME.py --cluster=mycluster
 
 Passing GCS input/output paths as arguments to your script:
 ```powershell
-gcloud dataproc jobs submit pyspark SCRIPT_NAME.py --cluster=mycluster -- gs://pstat135-adam/raw/shots/ gs://pstat135-adam/processed/
+gcloud dataproc jobs submit pyspark SCRIPT_NAME.py --cluster=mycluster -- gs://<YOUR_GCS_BUCKET>/raw/shots/ gs://<YOUR_GCS_BUCKET>/processed/
 ```
 
 ---
@@ -130,17 +130,17 @@ gcloud dataproc jobs submit pyspark SCRIPT_NAME.py --cluster=mycluster -- gs://p
 
 Single file:
 ```powershell
-gcloud storage cp data\raw\filename.csv gs://pstat135-adam/raw/shots/
+gcloud storage cp data\raw\filename.csv gs://<YOUR_GCS_BUCKET>/raw/shots/
 ```
 
 Entire local folder:
 ```powershell
-gcloud storage cp -r data\raw\pbp\ gs://pstat135-adam/raw/pbp/
+gcloud storage cp -r data\raw\pbp\ gs://<YOUR_GCS_BUCKET>/raw/pbp/
 ```
 
 Verify the upload landed:
 ```powershell
-gcloud storage ls gs://pstat135-adam/raw/shots/
+gcloud storage ls gs://<YOUR_GCS_BUCKET>/raw/shots/
 ```
 
 ---

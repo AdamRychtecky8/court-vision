@@ -1,25 +1,8 @@
 """
-plot_archetypes.py — Act 3 figures: the archetype map (Fig 5) and the era shift (Fig 6)
-=======================================================================================
-Runs LOCALLY (no Spark). Reads the two CSVs saved by archetypes.py.
-
-INPUTS (download once from the court-vision/ root):
-    gcloud storage cp `
-      "gs://pstat135-adam/processed/tables/player_clusters/part-*.csv" `
-      05_clustering/player_clusters.csv
-    gcloud storage cp `
-      "gs://pstat135-adam/processed/tables/cluster_by_era/part-*.csv" `
-      05_clustering/cluster_by_era.csv
-
-OUTPUTS:
-    report/fig5_archetype_map.png
-    report/fig6_archetype_era_shift.png
-
-DEPENDENCIES: pandas + matplotlib   (pip install pandas matplotlib)
+Act 3 figures: the archetype map (Fig 5) and the era shift (Fig 6)
 
 CLUSTER NUMBERING: the cluster IDs come from K-Means with seed=42 on the full data, so
-they are reproducible. The names below are read off the Step-5 profile table — verify them
-against that table and edit if you reran with a different k or seed.
+they are reproducible. The names below are read off the Step-5 profile table
 """
 
 from pathlib import Path
@@ -30,7 +13,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 CLUSTERS_CSV = HERE / "player_clusters.csv"
-ERA_CSV = HERE / "cluster_by_era.csv"
+ERA_CSV = HERE.parent / "report" / "tables" / "cluster_by_era.csv"
 FIG5_OUT = HERE.parent / "report" / "fig5_archetype_map.png"
 FIG6_OUT = HERE.parent / "report" / "fig6_archetype_era_shift.png"
 
@@ -44,18 +27,16 @@ CLUSTER_NAMES = {
     4: "Mid-Range Specialist",
 }
 CLUSTER_COLORS = {
-    0: "#1D428A",  # blue
-    1: "#C8102E",  # red
-    2: "#2E9E5B",  # green
-    3: "#F2A900",  # gold
-    4: "#7D3C98",  # purple
+    0: "#1D428A",  
+    1: "#C8102E",  
+    2: "#2E9E5B",  
+    3: "#F2A900",  
+    4: "#7D3C98", 
 }
 
-# ===========================================================================
-# Figure 5 — archetype map: every player-season placed on the two PCA axes
-# ===========================================================================
 df = pd.read_csv(CLUSTERS_CSV)
 
+# Fig 5 - archetype map
 fig, ax = plt.subplots(figsize=(10, 8))
 for cid, name in CLUSTER_NAMES.items():
     sub = df[df["cluster"] == cid]
@@ -68,7 +49,6 @@ for cid, name in CLUSTER_NAMES.items():
     ax.annotate(name, (cx, cy), fontsize=10, fontweight="bold",
                 ha="center", va="center", color="black", zorder=6)
 
-# Axis labels spell out what the PCA axes MEAN (from the loadings), so the map is readable.
 ax.set_xlabel("PC1 (51.5%):   interior  ←——————→  perimeter", fontsize=11)
 ax.set_ylabel("PC2 (23.0%):   mid-range  ←——————→  rim / paint", fontsize=11)
 ax.set_title("Player Archetypes by Shot-Location Profile (2004–2024)",
@@ -84,9 +64,7 @@ FIG5_OUT.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(FIG5_OUT, dpi=200, bbox_inches="tight")
 print(f"wrote {FIG5_OUT}")
 
-# ===========================================================================
-# Figure 6 — era shift: each archetype's share of player-seasons, pre vs post 2015
-# ===========================================================================
+# Fig 6 - era shift
 era = pd.read_csv(ERA_CSV).sort_values("cluster").reset_index(drop=True)
 era["name"] = era["cluster"].map(CLUSTER_NAMES)
 # Order bars by how much each archetype grew/shrank, so the story reads left-to-right.
@@ -100,7 +78,6 @@ ax2.bar([i - width / 2 for i in x], era["pre_pct"], width,
 ax2.bar([i + width / 2 for i in x], era["post_pct"], width,
         label="Post-2015", color="#1D428A")
 
-# Annotate each pair with the change in percentage points.
 for i, row in era.iterrows():
     ax2.text(i, max(row["pre_pct"], row["post_pct"]) + 0.8,
              f"{row['delta_pct']:+.1f}", ha="center", fontsize=9,

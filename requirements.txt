@@ -1,0 +1,12 @@
+# Distributed processing — jobs run on a Dataproc-managed Spark cluster.
+# Version is whatever the cluster's Dataproc 2.x image provides (see
+# 01_ingestion/setup_commands.md); not pinned here since these scripts
+# never run against a local PySpark install.
+pyspark
+
+# Local figure generation + Quarto report rendering
+pandas==2.3.3
+numpy==2.3.4
+matplotlib==3.10.6
+tabulate==0.10.0
+ipython==9.5.0

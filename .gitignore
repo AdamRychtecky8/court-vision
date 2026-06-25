@@ -1,18 +1,31 @@
 # Data lives in GCS, never in Git
-data/**/*.csv
-data/**/*.parquet
-data/**/*.json
-data/*.csv
-data/*.parquet
-*.crc
+data/raw/
 
 # Credentials
 *.json
 service-account*.json
 
-# Python / notebooks
+# Claude Code local settings
+.claude/settings.local.json
+
+# Python
 __pycache__/
 .ipynb_checkpoints/
 venv/
 .venv/
 *.pyc
+
+# Quarto / LaTeX build artifacts
+.quarto/
+*_files/
+*.aux
+*.log
+*.tex
+
+# Spark job output markers
+_SUCCESS
+*.crc
+spark-warehouse/
+
+# OS junk
+.DS_Store

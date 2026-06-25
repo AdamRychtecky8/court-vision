@@ -111,16 +111,12 @@ def main():
 
     first_row = transformed.select("features").first()
     vector_size = first_row["features"].size
-    print(f"\n[verify] assembled feature vector length = {vector_size}")
-    print(f"[verify] numeric features contributed: {len(NUMERIC_COLS)}")
-    print("[verify] distinct categories per categorical column:")
     for c in CATEGORICAL_COLS:
         n = transformed.select(c).distinct().count()
         print(f"         {c}: {n}")
 
-    print("\n[verify] sample rows (categoricals + label + assembled features):")
     transformed.select(*CATEGORICAL_COLS, LABEL_COL, "features").show(5, truncate=60)
-    
+
     print(f"[done] rows available for modeling: {transformed.count():,}")
 
     spark.stop()
